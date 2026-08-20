@@ -1,0 +1,21 @@
+# =========================================================
+# Unity - Code Arena
+# =========================================================
+
+code_arena/unity/ArenaMultiplayer/[Ll]ibrary/
+code_arena/unity/ArenaMultiplayer/[Tt]emp/
+code_arena/unity/ArenaMultiplayer/[Oo]bj/
+code_arena/unity/ArenaMultiplayer/[Bb]uild/
+code_arena/unity/ArenaMultiplayer/[Bb]uilds/
+code_arena/unity/ArenaMultiplayer/[Ll]ogs/
+code_arena/unity/ArenaMultiplayer/[Uu]ser[Ss]ettings/
+code_arena/unity/ArenaMultiplayer/[Mm]emoryCaptures/
+code_arena/unity/ArenaMultiplayer/[Rr]ecordings/
+
+code_arena/unity/ArenaMultiplayer/.vs/
+
+code_arena/unity/ArenaMultiplayer/*.csproj
+code_arena/unity/ArenaMultiplayer/*.sln
+code_arena/unity/ArenaMultiplayer/*.suo
+code_arena/unity/ArenaMultiplayer/*.user
+code_arena/unity/ArenaMultiplayer/*.userprefs

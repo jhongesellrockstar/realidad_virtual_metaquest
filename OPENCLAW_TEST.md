@@ -1,0 +1,1 @@
+OpenClaw local agent operational.
