@@ -2,6 +2,12 @@
 
 Arena multijugador fullstack que integra Unity WebGL, Next.js, Firebase y un servidor Socket.IO autenticado. Dos jugadores crean o comparten una sala, se mueven en tiempo real, disputan una carrera hasta la meta y consultan resultados persistidos, ranking e historial.
 
+## Live Demo
+
+https://code-arena-daf7b.onrender.com
+
+> La demostración está desplegada en Render Free. Después de un período de inactividad, el primer acceso puede tardar aproximadamente un minuto mientras el servidor multijugador se reactiva.
+
 ## Flujo demostrable
 
 1. Registro o login con Firebase Email/Password.
