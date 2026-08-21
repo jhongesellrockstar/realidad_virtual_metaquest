@@ -20,16 +20,16 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 | 2 | Build WebGL | ✅ HECHO | Build no comprimida presente y probada en navegador. `Web.data`, `Web.framework.js`, `Web.loader.js` y `Web.wasm` cargan con HTTP 200 y MIME correctos. |
 | 3 | Next.js | 🟡 PARCIAL | Next.js 16.3.1, React 19.2.8, App Router, TypeScript estricto y Tailwind 4. `next build` pasa. Faltan las funciones fullstack. |
 | 4 | Integracion Unity -> Next.js | 🟡 PARCIAL | `/game` incrusta `/unity/arena/index.html` y la build carga sin errores de consola. Falta progreso/error controlado por Next.js y puente de sesion/sala/token. |
-| 5 | Firebase project | ⚠️ REQUIERE ACCIÓN DEL USUARIO | `code_arena/firebase` esta vacio; no hay configuracion, proyecto identificado ni variables de entorno. |
-| 6 | Firebase Authentication | 🟡 PARCIAL | Firebase Web SDK, provider persistente y operaciones email/password implementadas; falta crear el proyecto externo y habilitar el proveedor. |
-| 7 | Firestore | 🟡 PARCIAL | Cliente tipado y perfil `users/{uid}` implementados; falta crear la base externa y completar salas/resultados. |
-| 8 | Firebase Security Rules | 🟡 PARCIAL | Existen reglas restrictivas e indices en `firebase/`, pendientes de desplegar tras crear el proyecto. |
+| 5 | Firebase project | ✅ HECHO | Proyecto Spark `code-arena-daf7b` y app web `code-arena-web` creados. |
+| 6 | Firebase Authentication | 🟡 PARCIAL | Email/password habilitado y cliente integrado; falta prueba E2E con cuentas de prueba. |
+| 7 | Firestore | 🟡 PARCIAL | Base Standard en `southamerica-west1`, perfiles y salas en tiempo real; faltan partidas/resultados del servidor. |
+| 8 | Firebase Security Rules | ✅ HECHO | Reglas restrictivas publicadas e indices compuestos creados. |
 | 9 | Login | 🟡 PARCIAL | Formulario real con Firebase, loading y errores implementado; pendiente de prueba contra el proyecto externo. |
 | 10 | Registro | 🟡 PARCIAL | Ruta `/register` y creacion de perfil implementadas; pendiente de prueba contra el proyecto externo. |
 | 11 | Proteccion de rutas | 🟡 PARCIAL | Guardas de sesion redirigen accesos anonimos a `/lobby` y `/game`; pendiente de prueba E2E con Firebase. |
-| 12 | Lobby | 🟡 PARCIAL | UI responsive basica presente. Los estados Web/Servidor/Firebase son textos estaticos. |
-| 13 | Crear sala | ❌ FALTA | El boton navega a `/game`; no crea ni persiste una sala. |
-| 14 | Unirse a sala | ❌ FALTA | El campo no esta conectado; el boton navega a `/game` sin validar codigo. |
+| 12 | Lobby | 🟡 PARCIAL | UI responsive con listado de salas en tiempo real; el estado del servidor sigue pendiente. |
+| 13 | Crear sala | ✅ HECHO | Creacion transaccional con codigo aleatorio y espera del segundo jugador. |
+| 14 | Unirse a sala | ✅ HECHO | Union transaccional por codigo, limite de dos jugadores y validacion de membresia. |
 | 15 | Servidor multijugador | ❌ FALTA | `code_arena/server` no contiene archivos. |
 | 16 | WebSocket | ❌ FALTA | No existe Socket.IO, WebSocket ni protocolo. |
 | 17 | Validacion Firebase Token en servidor | ❌ FALTA | No existe servidor ni Firebase Admin SDK. |
@@ -38,7 +38,7 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 | 20 | Ranking | ❌ FALTA | No existe pantalla, consulta ni coleccion de puntajes. |
 | 21 | Reconexion | ❌ FALTA | No hay cliente/servidor multijugador que pueda reconectar. |
 | 22 | Manejo de errores | 🟡 PARCIAL | Auth incluye mensajes utiles, estados loading y configuracion faltante; faltan red, sala y persistencia. |
-| 23 | Variables de entorno | 🟡 PARCIAL | `.env.example` documenta Firebase y multijugador; `.env.local` se generara con la app Firebase registrada. |
+| 23 | Variables de entorno | ✅ HECHO | `.env.example` documentado y `.env.local` ignorado configurado para el proyecto Firebase. |
 | 24 | Seguridad | 🟡 PARCIAL | No se detectaron secretos, claves privadas, service accounts ni `.env` versionados. Sin embargo, no hay autenticacion, reglas ni validacion de identidad. |
 | 25 | Docker | ❌ FALTA | `deployment/docker` esta vacio. |
 | 26 | Nginx | ❌ FALTA | `deployment/nginx` esta vacio. |
@@ -114,11 +114,18 @@ Las carpetas `firebase`, `server`, `deployment` y `docs` no contenian archivos a
 - `.env.example`, inicializacion segura, provider de sesion, registro, login, logout y guardas implementados.
 - Reglas e indices Firestore restrictivos preparados.
 - `npm run lint` y `npm run build` pasan; `/register` se incluye en el build.
-- Proyecto externo `code-arena-daf7b` preparado en Firebase Console, pendiente de confirmacion antes de crearlo.
+- Proyecto externo `code-arena-daf7b` creado en Firebase Console con app web registrada.
+
+### Checkpoint salas Firestore - 2026-08-20
+
+- Proyecto y app web creados en Spark; Authentication email/password habilitado.
+- Firestore Standard creado en Santiago, reglas publicadas e indices compuestos en compilacion.
+- Lobby con creacion, union, listado en tiempo real y espera de dos jugadores implementado.
+- `npm run lint` y `npm run build` pasan con la configuracion Firebase real.
 
 ## Riesgos y decisiones inmediatas
 
-1. Firebase es el primer bloqueo humano real: se necesita proyecto, app web, Auth email/password y Firestore.
+1. La prueba E2E de Auth y salas requiere crear dos cuentas de prueba; la configuracion externa ya esta lista.
 2. La proteccion solo del lado cliente no sera suficiente para el objetivo final. La navegacion debe bloquearse durante la resolucion de sesion y el servidor debe validar cada ID token con Firebase Admin.
 3. El lint debe ignorar `public/unity/**` porque es salida generada y no mantenible manualmente.
 4. La build WebGL pesada esta versionada una sola vez en la ruta publicada; no se debe agregar la copia ignorada de `Builds/`.
