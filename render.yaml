@@ -9,6 +9,8 @@ services:
     startCommand: NODE_ENV=production npm start
     healthCheckPath: /health
     envVars:
+      - key: NODE_ENV
+        value: development
       - key: FIREBASE_PROJECT_ID
         value: code-arena-daf7b
       - key: FIREBASE_SERVICE_ACCOUNT_BASE64
