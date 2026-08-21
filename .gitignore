@@ -19,3 +19,9 @@ code_arena/unity/ArenaMultiplayer/*.sln
 code_arena/unity/ArenaMultiplayer/*.suo
 code_arena/unity/ArenaMultiplayer/*.user
 code_arena/unity/ArenaMultiplayer/*.userprefs
+
+# Firebase Admin and server credentials
+**/*service-account*.json
+**/firebase-adminsdk*.json
+code_arena/server/.env*
+!code_arena/server/.env.example
