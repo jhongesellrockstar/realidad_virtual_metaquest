@@ -16,30 +16,30 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 
 | # | Componente | Estado | Evidencia / pendiente |
 |---:|---|---|---|
-| 1 | Unity | 🟡 PARCIAL | Proyecto `ArenaMultiplayer` en Unity 6000.3.22f1, escena `Assets/Scenes/Arena.unity` y `PlayerMovement.cs`. Solo hay movimiento local. La recompilacion batch no pudo ejecutarse porque el proyecto esta abierto en otra instancia de Unity. |
+| 1 | Unity | ✅ HECHO | Proyecto `ArenaMultiplayer` en Unity 6000.3.22f1 con movimiento local, jugador remoto y puente WebGL probado con dos clientes. |
 | 2 | Build WebGL | ✅ HECHO | Build no comprimida presente y probada en navegador. `Web.data`, `Web.framework.js`, `Web.loader.js` y `Web.wasm` cargan con HTTP 200 y MIME correctos. |
-| 3 | Next.js | 🟡 PARCIAL | Next.js 16.3.1, React 19.2.8, App Router, TypeScript estricto y Tailwind 4. `next build` pasa. Faltan las funciones fullstack. |
+| 3 | Next.js | ✅ HECHO | Next.js 16.3.1, App Router, TypeScript estricto, Tailwind, flujo completo y build de produccion verificada. |
 | 4 | Integracion Unity -> Next.js | ✅ HECHO | `/game` carga el build WebGL y el puente `postMessage` conecta Unity con el cliente Socket.IO. |
 | 5 | Firebase project | ✅ HECHO | Proyecto Spark `code-arena-daf7b` y app web `code-arena-web` creados. |
-| 6 | Firebase Authentication | 🟡 PARCIAL | Email/password habilitado y cliente integrado; falta prueba E2E con cuentas de prueba. |
-| 7 | Firestore | 🟡 PARCIAL | Base Standard en `southamerica-west1`, perfiles y salas en tiempo real; faltan partidas/resultados del servidor. |
+| 6 | Firebase Authentication | ✅ HECHO | Email/password habilitado y probado E2E con dos cuentas independientes. |
+| 7 | Firestore | ✅ HECHO | Base Standard en `southamerica-west1` con perfiles, salas, partidas y puntajes persistentes. |
 | 8 | Firebase Security Rules | ✅ HECHO | Reglas restrictivas publicadas e indices compuestos creados. |
-| 9 | Login | 🟡 PARCIAL | Formulario real con Firebase, loading y errores implementado; pendiente de prueba contra el proyecto externo. |
-| 10 | Registro | 🟡 PARCIAL | Ruta `/register` y creacion de perfil implementadas; pendiente de prueba contra el proyecto externo. |
-| 11 | Proteccion de rutas | 🟡 PARCIAL | Guardas de sesion redirigen accesos anonimos a `/lobby` y `/game`; pendiente de prueba E2E con Firebase. |
-| 12 | Lobby | 🟡 PARCIAL | UI responsive con listado de salas en tiempo real; el estado del servidor sigue pendiente. |
+| 9 | Login | ✅ HECHO | Formulario Firebase con loading, errores y prueba real para ambos jugadores. |
+| 10 | Registro | ✅ HECHO | Ruta `/register` y creacion de perfil implementadas. |
+| 11 | Proteccion de rutas | ✅ HECHO | Guardas de sesion bloquean y redirigen accesos anonimos a rutas privadas. |
+| 12 | Lobby | ✅ HECHO | UI responsive, salas en tiempo real, crear/unir/salir, estado del servidor, ranking y logout. |
 | 13 | Crear sala | ✅ HECHO | Creacion transaccional con codigo aleatorio y espera del segundo jugador. |
 | 14 | Unirse a sala | ✅ HECHO | Union transaccional por codigo, limite de dos jugadores y validacion de membresia. |
-| 15 | Servidor multijugador | 🟡 PARCIAL | Node/TypeScript con Express, Socket.IO, salas en memoria, healthcheck y validacion de movimiento; falta persistencia de resultados. |
+| 15 | Servidor multijugador | ✅ HECHO | Node/TypeScript, Express, Socket.IO, salas, healthcheck, meta de victoria, validacion y persistencia Admin. |
 | 16 | WebSocket | ✅ HECHO | Protocolo tipado de union, movimiento, entrada, salida y reconexion Socket.IO. |
 | 17 | Validacion Firebase Token en servidor | ✅ HECHO | Firebase Admin valida ID tokens y el servidor confirma membresia contra Firestore. |
-| 18 | Sincronizacion de jugadores | 🟡 PARCIAL | Puente WebGL y jugador remoto implementados; falta prueba E2E real con dos cuentas. |
-| 19 | Persistencia de partidas | ❌ FALTA | No existe modelo ni escritura de partidas/resultados. |
-| 20 | Ranking | ❌ FALTA | No existe pantalla, consulta ni coleccion de puntajes. |
-| 21 | Reconexion | ❌ FALTA | No hay cliente/servidor multijugador que pueda reconectar. |
+| 18 | Sincronizacion de jugadores | ✅ HECHO | Movimiento bidireccional y desconexion probados visualmente en dos clientes WebGL independientes. |
+| 19 | Persistencia de partidas | ✅ HECHO | El servidor escribe partida, ganador, puntajes y estado final mediante Firebase Admin. |
+| 20 | Ranking | ✅ HECHO | `/ranking` muestra clasificacion global e historial privado en tiempo real. |
+| 21 | Reconexion | 🟡 PARCIAL | Socket.IO reconecta y vuelve a unir la sala; falta conservar posicion durante cortes prolongados. |
 | 22 | Manejo de errores | 🟡 PARCIAL | Auth incluye mensajes utiles, estados loading y configuracion faltante; faltan red, sala y persistencia. |
 | 23 | Variables de entorno | ✅ HECHO | `.env.example` documentado y `.env.local` ignorado configurado para el proyecto Firebase. |
-| 24 | Seguridad | 🟡 PARCIAL | No se detectaron secretos, claves privadas, service accounts ni `.env` versionados. Sin embargo, no hay autenticacion, reglas ni validacion de identidad. |
+| 24 | Seguridad | ✅ HECHO | Reglas restrictivas, ID tokens verificados, token invalido rechazado y credenciales locales ignoradas por Git. |
 | 25 | Docker | ❌ FALTA | `deployment/docker` esta vacio. |
 | 26 | Nginx | ❌ FALTA | `deployment/nginx` esta vacio. |
 | 27 | VPS | ⚠️ REQUIERE ACCIÓN DEL USUARIO | No hay VPS seleccionada ni acceso suministrado. No se debe contratar nada sin autorizacion. |
@@ -47,7 +47,7 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 | 29 | HTTPS | ❌ FALTA | No hay certificado ni configuracion Certbot/Let's Encrypt. Depende de VPS y DNS. |
 | 30 | CI/CD | ❌ FALTA | No existe `.github/` ni workflow. |
 | 31 | README | 🔴 ERROR | El README raiz solo dice `Proyecto` y el README web es el texto generico de create-next-app. No documentan arquitectura ni ejecucion completa. |
-| 32 | Pruebas con dos clientes | ❌ FALTA | Solo se verifico un cliente local y movimiento local; no existe multijugador que probar. |
+| 32 | Pruebas con dos clientes | ✅ HECHO | Flujo completo probado en puertos/origenes independientes: login, sala, WebGL, movimiento mutuo, salida, resultado, ranking e historial. |
 
 ## Auditoria tecnica
 
@@ -129,6 +129,14 @@ Las carpetas `firebase`, `server`, `deployment` y `docs` no contenian archivos a
 - Tres pruebas unitarias del servidor, typecheck, build y npm audit pasan.
 - Puente Next.js/Unity y representacion del jugador remoto compilados en WebGL.
 - Build WebGL reproducible y carga visual local verificada en Edge.
+
+### Checkpoint E2E, resultados y ranking - 2026-08-21
+
+- Dos cuentas Firebase de prueba creadas; sus contraseñas solo existen en un archivo local ignorado.
+- Sala `K8PZ3`: dos WebGL conectados, movimiento recibido en ambos sentidos y salida remota verificada visualmente.
+- Firebase Admin rechazo un token invalido y acepto los dos ID tokens reales con membresia Firestore.
+- Victoria persistida en `matches`, acumulados en `scores`, sala marcada `finished` y ranking/historial verificados en navegador.
+- Server typecheck, 4 tests y build; Web lint y build: todos pasan.
 
 ## Riesgos y decisiones inmediatas
 

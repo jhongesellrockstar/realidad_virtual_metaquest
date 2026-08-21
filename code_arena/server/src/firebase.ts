@@ -1,15 +1,73 @@
-import { getApps, initializeApp } from "firebase-admin/app";
+import { readFileSync } from "node:fs";
+import { cert, getApps, initializeApp, type ServiceAccount } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
+import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
+import type { MatchResult } from "./protocol.js";
 
-export function initializeFirebase(projectId: string): void {
+export function initializeFirebase(projectId: string, serviceAccountPath?: string): void {
   if (getApps().length === 0) {
+    if (serviceAccountPath) {
+      const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8")) as ServiceAccount;
+      initializeApp({ credential: cert(serviceAccount), projectId });
+      return;
+    }
     initializeApp({ projectId });
   }
 }
 
-export async function verifyFirebaseIdToken(idToken: string): Promise<{ uid: string }> {
+export async function verifyFirebaseIdToken(idToken: string): Promise<{ displayName: string; uid: string }> {
   const decodedToken = await getAuth().verifyIdToken(idToken);
-  return { uid: decodedToken.uid };
+  return {
+    displayName: decodedToken.name || decodedToken.email || "Jugador",
+    uid: decodedToken.uid,
+  };
+}
+
+export async function persistMatchResult(
+  result: MatchResult,
+  displayNames: Map<string, string>,
+): Promise<void> {
+  const db = getFirestore();
+  const matchRef = db.collection("matches").doc(result.matchId);
+  const roomRef = db.collection("rooms").doc(result.roomCode);
+
+  await db.runTransaction(async (transaction) => {
+    const existingMatch = await transaction.get(matchRef);
+    if (existingMatch.exists) return;
+
+    transaction.create(matchRef, {
+      completedAt: Timestamp.fromMillis(result.completedAt),
+      loserUid: result.loserUid,
+      playerNames: Object.fromEntries(
+        result.playerUids.map((uid) => [uid, displayNames.get(uid) || "Jugador"]),
+      ),
+      playerUids: result.playerUids,
+      roomCode: result.roomCode,
+      scores: { [result.winnerUid]: result.winnerPoints, [result.loserUid]: 0 },
+      winnerUid: result.winnerUid,
+    });
+
+    for (const uid of result.playerUids) {
+      const won = uid === result.winnerUid;
+      const scoreRef = db.collection("scores").doc(uid);
+      transaction.set(scoreRef, {
+        displayName: displayNames.get(uid) || "Jugador",
+        losses: FieldValue.increment(won ? 0 : 1),
+        matchesPlayed: FieldValue.increment(1),
+        points: FieldValue.increment(won ? result.winnerPoints : 0),
+        uid,
+        updatedAt: FieldValue.serverTimestamp(),
+        wins: FieldValue.increment(won ? 1 : 0),
+      }, { merge: true });
+    }
+
+    transaction.update(roomRef, {
+      matchId: result.matchId,
+      status: "finished",
+      updatedAt: FieldValue.serverTimestamp(),
+      winnerUid: result.winnerUid,
+    });
+  });
 }
 
 type FirestoreValue = {

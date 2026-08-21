@@ -27,4 +27,17 @@ describe("RoomManager", () => {
     assert.equal(rooms.leave("ABCDE", "one"), true);
     assert.deepEqual(rooms.snapshot("ABCDE").players, []);
   });
+
+  it("finishes a two-player match when a player reaches the goal", () => {
+    const rooms = new RoomManager();
+    rooms.join("ABCDE", "one", 1000);
+    rooms.join("ABCDE", "two", 1000);
+    rooms.move("ABCDE", "one", { x: 8, y: 0, sequence: 1 }, 2000);
+
+    const result = rooms.finishIfGoalReached("ABCDE", "one", 2000);
+    assert.equal(result?.winnerUid, "one");
+    assert.equal(result?.loserUid, "two");
+    assert.equal(result?.winnerPoints, 3);
+    assert.equal(rooms.finishIfGoalReached("ABCDE", "one", 2100), null);
+  });
 });

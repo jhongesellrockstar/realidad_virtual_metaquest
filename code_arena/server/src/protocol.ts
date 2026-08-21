@@ -20,6 +20,16 @@ export type RoomSnapshot = {
   players: PlayerState[];
 };
 
+export type MatchResult = {
+  completedAt: number;
+  loserUid: string;
+  matchId: string;
+  playerUids: string[];
+  roomCode: string;
+  winnerPoints: number;
+  winnerUid: string;
+};
+
 export type Acknowledgement =
   | { ok: true }
   | { ok: false; error: string };
@@ -34,12 +44,15 @@ export interface ClientToServerEvents {
 }
 
 export interface ServerToClientEvents {
+  match_finished: (result: MatchResult) => void;
   player_joined: (player: PlayerState) => void;
   player_left: (uid: string) => void;
   player_moved: (player: PlayerState) => void;
+  server_error: (message: string) => void;
 }
 
 export interface SocketData {
+  displayName: string;
   idToken: string;
   roomCode?: string;
   uid: string;

@@ -12,11 +12,22 @@ export type PlayerState = {
 type RoomSnapshot = { code: string; players: PlayerState[] };
 type JoinResult = { ok: true; snapshot: RoomSnapshot } | { ok: false; error: string };
 type MoveResult = { ok: true } | { ok: false; error: string };
+export type MatchResult = {
+  completedAt: number;
+  loserUid: string;
+  matchId: string;
+  playerUids: string[];
+  roomCode: string;
+  winnerPoints: number;
+  winnerUid: string;
+};
 
 interface ServerEvents {
+  match_finished: (result: MatchResult) => void;
   player_joined: (player: PlayerState) => void;
   player_left: (uid: string) => void;
   player_moved: (player: PlayerState) => void;
+  server_error: (message: string) => void;
 }
 
 interface ClientEvents {

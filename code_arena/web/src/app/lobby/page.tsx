@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AuthGuard } from "@/components/auth/auth-guard";
@@ -23,6 +24,7 @@ function LobbyContent() {
   const [error, setError] = useState<string | null>(null);
   const [roomCode, setRoomCode] = useState("");
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [serverReady, setServerReady] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -34,6 +36,18 @@ function LobbyContent() {
       (caughtError) => setError(getFirebaseErrorMessage(caughtError)),
     );
   }, [user]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const endpoint = `${process.env.NEXT_PUBLIC_MULTIPLAYER_URL || "http://localhost:4000"}/health`;
+    void fetch(endpoint, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("Servidor no disponible");
+        setServerReady(true);
+      })
+      .catch(() => setServerReady(false));
+    return () => controller.abort();
+  }, []);
 
   async function handleCreateRoom() {
     if (!user) return;
@@ -82,9 +96,7 @@ function LobbyContent() {
               Sesión: <span className="text-zinc-200">{user?.displayName || user?.email}</span>
             </p>
           </div>
-          <button onClick={handleLogout} className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white">
-            Cerrar sesión
-          </button>
+          <div className="flex gap-3"><Link href="/ranking" className="rounded-lg border border-cyan-900 px-4 py-2 text-sm text-cyan-300 transition hover:bg-cyan-950">Ranking</Link><button onClick={handleLogout} className="rounded-lg border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition hover:bg-zinc-900 hover:text-white">Cerrar sesión</button></div>
         </header>
 
         {error ? <p role="alert" className="mt-6 rounded-xl border border-red-900 bg-red-950/60 p-4 text-sm text-red-200">{error}</p> : null}
@@ -133,7 +145,7 @@ function LobbyContent() {
           <h2 className="text-xl font-semibold">Estado del sistema</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-3">
             <Status name="Web" value="Disponible" ready />
-            <Status name="Servidor" value="Pendiente" />
+            <Status name="Servidor" value={serverReady ? "Conectado" : "Sin conexión"} ready={serverReady} />
             <Status name="Firebase" value="Conectado" ready />
           </div>
         </section>

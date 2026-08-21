@@ -1,11 +1,14 @@
-import type { MovementInput, PlayerState, RoomSnapshot } from "./protocol.js";
+import type { MatchResult, MovementInput, PlayerState, RoomSnapshot } from "./protocol.js";
 
 const MAX_PLAYERS = 2;
 const MAX_SPEED_UNITS_PER_SECOND = 12;
 const MOVEMENT_TOLERANCE = 1.5;
+const WINNING_X = 8;
+const WINNER_POINTS = 3;
 
 export class RoomManager {
   private readonly rooms = new Map<string, Map<string, PlayerState>>();
+  private readonly finishedMatches = new Map<string, MatchResult>();
 
   join(code: string, uid: string, now = Date.now()): RoomSnapshot {
     const players = this.rooms.get(code) ?? new Map<string, PlayerState>();
@@ -41,6 +44,39 @@ export class RoomManager {
     const nextPlayer = { ...movement, uid, updatedAt: now };
     this.rooms.get(code)?.set(uid, nextPlayer);
     return nextPlayer;
+  }
+
+  finishIfGoalReached(code: string, uid: string, now = Date.now()): MatchResult | null {
+    const players = this.rooms.get(code);
+    const winner = players?.get(uid);
+    if (!players || players.size !== MAX_PLAYERS || !winner || winner.x < WINNING_X) {
+      return null;
+    }
+
+    const existingResult = this.finishedMatches.get(code);
+    if (existingResult) return null;
+
+    const playerUids = Array.from(players.keys());
+    const loserUid = playerUids.find((playerUid) => playerUid !== uid);
+    if (!loserUid) return null;
+
+    const result: MatchResult = {
+      completedAt: now,
+      loserUid,
+      matchId: `${code}-${now}`,
+      playerUids,
+      roomCode: code,
+      winnerPoints: WINNER_POINTS,
+      winnerUid: uid,
+    };
+    this.finishedMatches.set(code, result);
+    return result;
+  }
+
+  releaseFinishedMatch(code: string, matchId: string): void {
+    if (this.finishedMatches.get(code)?.matchId === matchId) {
+      this.finishedMatches.delete(code);
+    }
   }
 
   leave(code: string, uid: string): boolean {

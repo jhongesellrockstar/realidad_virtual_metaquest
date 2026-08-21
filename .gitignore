@@ -29,3 +29,4 @@ code_arena/server/dist/
 **/firebase-adminsdk*.json
 code_arena/server/.env*
 !code_arena/server/.env.example
+code_arena/.test-credentials.local.json

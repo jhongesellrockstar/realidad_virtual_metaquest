@@ -9,6 +9,7 @@ import { getFirebaseErrorMessage } from "@/lib/firebase/errors";
 import { subscribeToRoom, type Room } from "@/lib/firebase/rooms";
 import {
   createMultiplayerSocket,
+  type MatchResult,
   type MultiplayerSocket,
   type PlayerState,
 } from "@/lib/multiplayer/client";
@@ -30,6 +31,7 @@ function GameContent() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(Boolean(code));
   const [room, setRoom] = useState<Room | null>(null);
+  const [result, setResult] = useState<MatchResult | null>(null);
   const [serverState, setServerState] = useState<"connecting" | "connected" | "offline">("connecting");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const socketRef = useRef<MultiplayerSocket | null>(null);
@@ -100,6 +102,7 @@ function GameContent() {
       });
       socket.on("connect_error", () => setServerState("offline"));
       socket.on("disconnect", () => setServerState("offline"));
+      socket.on("match_finished", (matchResult) => setResult(matchResult));
       socket.on("player_joined", (player) => {
         latestRemotePlayers.set(player.uid, player);
         sendToUnity("remote_state", player);
@@ -112,6 +115,7 @@ function GameContent() {
         latestRemotePlayers.delete(uid);
         sendToUnity("remote_left", uid);
       });
+      socket.on("server_error", (message) => setError(message));
       socket.connect();
     }).catch((caughtError) => {
       if (!cancelled) {
@@ -134,6 +138,8 @@ function GameContent() {
         x: movement.x,
         y: movement.y,
         sequence: movement.sequence,
+      }, (moveResult) => {
+        if (!moveResult.ok) setError(moveResult.error);
       });
     }
 
@@ -154,6 +160,7 @@ function GameContent() {
             <h1 className="text-3xl font-bold">Code Arena</h1>
             <p className="mt-2 text-zinc-400">Sala <span className="font-mono font-semibold tracking-widest text-cyan-300">{code || "sin código"}</span></p>
             {gameReady ? <p className={`mt-1 text-xs ${serverState === "connected" ? "text-emerald-400" : serverState === "offline" ? "text-red-400" : "text-amber-400"}`}>Servidor: {serverState === "connected" ? "conectado" : serverState === "offline" ? "sin conexión" : "conectando…"}</p> : null}
+            {gameReady && !result ? <p className="mt-2 text-sm text-zinc-400">Objetivo: sé el primero en llegar al extremo derecho.</p> : null}
           </div>
           <Link href="/lobby" className="rounded-lg border border-zinc-700 px-4 py-2 text-sm hover:bg-zinc-900">Volver al lobby</Link>
         </header>
@@ -163,6 +170,15 @@ function GameContent() {
             <p role="alert" className="text-red-300">{error || "Selecciona una sala desde el lobby."}</p>
             <Link href="/lobby" className="mt-5 rounded-lg bg-cyan-500 px-4 py-2 font-semibold text-black">Buscar sala</Link>
           </section>
+        ) : result ? (
+          <section className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-cyan-900 bg-zinc-900 p-8 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-400">Partida finalizada</p>
+            <h2 className="mt-4 text-4xl font-bold">{result.winnerUid === user?.uid ? "¡Victoria!" : "Buen duelo"}</h2>
+            <p className="mt-3 text-zinc-400">El ganador suma {result.winnerPoints} puntos. El resultado se está guardando en Firestore.</p>
+            <div className="mt-7 flex flex-wrap justify-center gap-3"><Link href="/ranking" className="rounded-lg bg-cyan-500 px-5 py-3 font-semibold text-black">Ver ranking</Link><Link href="/lobby" className="rounded-lg border border-zinc-700 px-5 py-3 font-semibold">Nueva partida</Link></div>
+          </section>
+        ) : room?.status === "finished" ? (
+          <section className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center"><h2 className="text-3xl font-bold">Partida finalizada</h2><p className="mt-3 text-zinc-400">El resultado de esta sala ya fue registrado.</p><Link href="/ranking" className="mt-6 rounded-lg bg-cyan-500 px-5 py-3 font-semibold text-black">Ver ranking e historial</Link></section>
         ) : !gameReady ? (
           <section className="flex flex-1 flex-col items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900 p-8 text-center">
             <div className="h-10 w-10 animate-spin rounded-full border-4 border-zinc-700 border-t-cyan-400" />
