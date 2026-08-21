@@ -21,12 +21,12 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 | 3 | Next.js | 🟡 PARCIAL | Next.js 16.3.1, React 19.2.8, App Router, TypeScript estricto y Tailwind 4. `next build` pasa. Faltan las funciones fullstack. |
 | 4 | Integracion Unity -> Next.js | 🟡 PARCIAL | `/game` incrusta `/unity/arena/index.html` y la build carga sin errores de consola. Falta progreso/error controlado por Next.js y puente de sesion/sala/token. |
 | 5 | Firebase project | ⚠️ REQUIERE ACCIÓN DEL USUARIO | `code_arena/firebase` esta vacio; no hay configuracion, proyecto identificado ni variables de entorno. |
-| 6 | Firebase Authentication | ❌ FALTA | Firebase SDK no esta instalado y email/password no esta habilitado/configurado. |
-| 7 | Firestore | ❌ FALTA | No hay base de datos, colecciones ni capa de acceso. |
-| 8 | Firebase Security Rules | ❌ FALTA | No hay `firestore.rules` ni configuracion de emuladores/deploy. |
-| 9 | Login | 🟡 PARCIAL | Existe UI en `/login`, pero el formulario no envia datos; el boton es un enlace directo al lobby. |
-| 10 | Registro | ❌ FALTA | No existe ruta ni formulario de registro. |
-| 11 | Proteccion de rutas | 🔴 ERROR | `/lobby` y `/game` responden 200 sin sesion; `/` tambien expone un enlace directo a `/game`. |
+| 6 | Firebase Authentication | 🟡 PARCIAL | Firebase Web SDK, provider persistente y operaciones email/password implementadas; falta crear el proyecto externo y habilitar el proveedor. |
+| 7 | Firestore | 🟡 PARCIAL | Cliente tipado y perfil `users/{uid}` implementados; falta crear la base externa y completar salas/resultados. |
+| 8 | Firebase Security Rules | 🟡 PARCIAL | Existen reglas restrictivas e indices en `firebase/`, pendientes de desplegar tras crear el proyecto. |
+| 9 | Login | 🟡 PARCIAL | Formulario real con Firebase, loading y errores implementado; pendiente de prueba contra el proyecto externo. |
+| 10 | Registro | 🟡 PARCIAL | Ruta `/register` y creacion de perfil implementadas; pendiente de prueba contra el proyecto externo. |
+| 11 | Proteccion de rutas | 🟡 PARCIAL | Guardas de sesion redirigen accesos anonimos a `/lobby` y `/game`; pendiente de prueba E2E con Firebase. |
 | 12 | Lobby | 🟡 PARCIAL | UI responsive basica presente. Los estados Web/Servidor/Firebase son textos estaticos. |
 | 13 | Crear sala | ❌ FALTA | El boton navega a `/game`; no crea ni persiste una sala. |
 | 14 | Unirse a sala | ❌ FALTA | El campo no esta conectado; el boton navega a `/game` sin validar codigo. |
@@ -37,8 +37,8 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 | 19 | Persistencia de partidas | ❌ FALTA | No existe modelo ni escritura de partidas/resultados. |
 | 20 | Ranking | ❌ FALTA | No existe pantalla, consulta ni coleccion de puntajes. |
 | 21 | Reconexion | ❌ FALTA | No hay cliente/servidor multijugador que pueda reconectar. |
-| 22 | Manejo de errores | ❌ FALTA | No hay estados funcionales de auth, red, sala o persistencia; Unity usa solo su plantilla generada. |
-| 23 | Variables de entorno | ❌ FALTA | No hay `.env.example` ni `.env.local`. Los `.env*` estan ignorados por el frontend. |
+| 22 | Manejo de errores | 🟡 PARCIAL | Auth incluye mensajes utiles, estados loading y configuracion faltante; faltan red, sala y persistencia. |
+| 23 | Variables de entorno | 🟡 PARCIAL | `.env.example` documenta Firebase y multijugador; `.env.local` se generara con la app Firebase registrada. |
 | 24 | Seguridad | 🟡 PARCIAL | No se detectaron secretos, claves privadas, service accounts ni `.env` versionados. Sin embargo, no hay autenticacion, reglas ni validacion de identidad. |
 | 25 | Docker | ❌ FALTA | `deployment/docker` esta vacio. |
 | 26 | Nginx | ❌ FALTA | `deployment/nginx` esta vacio. |
@@ -66,7 +66,7 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 - Dependencias declaradas e instaladas; `npm ls --depth=0` reporta varios paquetes WASM opcionales como `extraneous`, sin afectar la compilacion.
 - `npm run build`: ✅ pasa; genera `/`, `/login`, `/lobby` y `/game` como contenido estatico.
 - TypeScript: ✅ pasa durante `next build` con `strict: true`.
-- `npm run lint`: 🔴 falla con 5 errores y 146 advertencias porque ESLint recorre JavaScript generado por Unity bajo `public/unity`; los errores observados pertenecen a `Web.framework.js`, no al fuente de Next.js. Debe excluirse la build generada del lint.
+- `npm run lint`: ✅ pasa; `public/unity/**` esta excluido por ser salida generada de Unity.
 - No hay pruebas automatizadas.
 
 ### Unity y WebGL
@@ -98,7 +98,7 @@ Las carpetas `firebase`, `server`, `deployment` y `docs` no contenian archivos a
 | Lectura textual y visual del PDF completo | ✅ |
 | Escaneo de secretos versionados | ✅ sin hallazgos |
 | `npm ls --depth=0` | 🟡 dependencias opcionales extraneous |
-| `npm run lint` | 🔴 falla por artefactos Unity generados |
+| `npm run lint` | ✅; artefactos Unity excluidos correctamente |
 | `npm run build` | ✅ |
 | HTTP de rutas Next y artefactos Unity | ✅ todos HTTP 200 |
 | MIME `.js`, `.data` y `.wasm` | ✅ |
@@ -106,6 +106,15 @@ Las carpetas `firebase`, `server`, `deployment` y `docs` no contenian archivos a
 | Carga visual de Unity WebGL | ✅ sin errores de consola |
 | Compilacion Unity batch | ⚠️ bloqueada por instancia de Unity ya abierta |
 | Dos clientes / multijugador | ❌ no implementado |
+
+### Checkpoint Firebase local - 2026-08-20
+
+- Firebase CLI 15.28.1 instalado.
+- Firebase Web SDK instalado sin vulnerabilidades reportadas por npm.
+- `.env.example`, inicializacion segura, provider de sesion, registro, login, logout y guardas implementados.
+- Reglas e indices Firestore restrictivos preparados.
+- `npm run lint` y `npm run build` pasan; `/register` se incluye en el build.
+- Proyecto externo `code-arena-daf7b` preparado en Firebase Console, pendiente de confirmacion antes de crearlo.
 
 ## Riesgos y decisiones inmediatas
 
@@ -126,4 +135,3 @@ Las carpetas `firebase`, `server`, `deployment` y `docs` no contenian archivos a
 5. Proteger `/lobby` y `/game`; retirar el acceso anonimo directo.
 6. Crear perfil basico y salas en Firestore con reglas restrictivas.
 7. Corregir lint, ejecutar build y pruebas de rutas antes de iniciar el servidor multijugador.
-

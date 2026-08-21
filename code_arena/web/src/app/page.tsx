@@ -27,10 +27,10 @@ export default function Home() {
             </Link>
 
             <Link
-              href="/game"
+              href="/register"
               className="rounded-xl border border-zinc-700 px-6 py-3 font-semibold transition hover:border-zinc-500 hover:bg-zinc-900"
             >
-              Ver demo
+              Crear cuenta
             </Link>
           </div>
         </div>
