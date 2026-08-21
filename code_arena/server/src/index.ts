@@ -19,7 +19,11 @@ import {
 import { RoomManager } from "./room-manager.js";
 
 const config = getConfig();
-initializeFirebase(config.FIREBASE_PROJECT_ID, config.FIREBASE_SERVICE_ACCOUNT_PATH);
+initializeFirebase(
+  config.FIREBASE_PROJECT_ID,
+  config.FIREBASE_SERVICE_ACCOUNT_PATH,
+  config.FIREBASE_SERVICE_ACCOUNT_BASE64,
+);
 const allowedOrigins = config.CORS_ORIGIN.split(",").map((origin) => origin.trim()).filter(Boolean);
 
 const app = express();

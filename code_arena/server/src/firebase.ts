@@ -4,10 +4,17 @@ import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import type { MatchResult } from "./protocol.js";
 
-export function initializeFirebase(projectId: string, serviceAccountPath?: string): void {
+export function initializeFirebase(
+  projectId: string,
+  serviceAccountPath?: string,
+  serviceAccountBase64?: string,
+): void {
   if (getApps().length === 0) {
-    if (serviceAccountPath) {
-      const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, "utf8")) as ServiceAccount;
+    if (serviceAccountPath || serviceAccountBase64) {
+      const serviceAccountJson = serviceAccountPath
+        ? readFileSync(serviceAccountPath, "utf8")
+        : Buffer.from(serviceAccountBase64!, "base64").toString("utf8");
+      const serviceAccount = JSON.parse(serviceAccountJson) as ServiceAccount;
       initializeApp({ credential: cert(serviceAccount), projectId });
       return;
     }
