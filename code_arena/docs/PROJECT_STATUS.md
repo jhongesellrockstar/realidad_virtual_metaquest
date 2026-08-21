@@ -19,7 +19,7 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 | 1 | Unity | 🟡 PARCIAL | Proyecto `ArenaMultiplayer` en Unity 6000.3.22f1, escena `Assets/Scenes/Arena.unity` y `PlayerMovement.cs`. Solo hay movimiento local. La recompilacion batch no pudo ejecutarse porque el proyecto esta abierto en otra instancia de Unity. |
 | 2 | Build WebGL | ✅ HECHO | Build no comprimida presente y probada en navegador. `Web.data`, `Web.framework.js`, `Web.loader.js` y `Web.wasm` cargan con HTTP 200 y MIME correctos. |
 | 3 | Next.js | 🟡 PARCIAL | Next.js 16.3.1, React 19.2.8, App Router, TypeScript estricto y Tailwind 4. `next build` pasa. Faltan las funciones fullstack. |
-| 4 | Integracion Unity -> Next.js | 🟡 PARCIAL | `/game` incrusta `/unity/arena/index.html` y la build carga sin errores de consola. Falta progreso/error controlado por Next.js y puente de sesion/sala/token. |
+| 4 | Integracion Unity -> Next.js | ✅ HECHO | `/game` carga el build WebGL y el puente `postMessage` conecta Unity con el cliente Socket.IO. |
 | 5 | Firebase project | ✅ HECHO | Proyecto Spark `code-arena-daf7b` y app web `code-arena-web` creados. |
 | 6 | Firebase Authentication | 🟡 PARCIAL | Email/password habilitado y cliente integrado; falta prueba E2E con cuentas de prueba. |
 | 7 | Firestore | 🟡 PARCIAL | Base Standard en `southamerica-west1`, perfiles y salas en tiempo real; faltan partidas/resultados del servidor. |
@@ -30,10 +30,10 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 | 12 | Lobby | 🟡 PARCIAL | UI responsive con listado de salas en tiempo real; el estado del servidor sigue pendiente. |
 | 13 | Crear sala | ✅ HECHO | Creacion transaccional con codigo aleatorio y espera del segundo jugador. |
 | 14 | Unirse a sala | ✅ HECHO | Union transaccional por codigo, limite de dos jugadores y validacion de membresia. |
-| 15 | Servidor multijugador | ❌ FALTA | `code_arena/server` no contiene archivos. |
-| 16 | WebSocket | ❌ FALTA | No existe Socket.IO, WebSocket ni protocolo. |
-| 17 | Validacion Firebase Token en servidor | ❌ FALTA | No existe servidor ni Firebase Admin SDK. |
-| 18 | Sincronizacion de jugadores | ❌ FALTA | Unity solo mueve `PlayerLocal`; no hay jugadores remotos ni estado de red. |
+| 15 | Servidor multijugador | 🟡 PARCIAL | Node/TypeScript con Express, Socket.IO, salas en memoria, healthcheck y validacion de movimiento; falta persistencia de resultados. |
+| 16 | WebSocket | ✅ HECHO | Protocolo tipado de union, movimiento, entrada, salida y reconexion Socket.IO. |
+| 17 | Validacion Firebase Token en servidor | ✅ HECHO | Firebase Admin valida ID tokens y el servidor confirma membresia contra Firestore. |
+| 18 | Sincronizacion de jugadores | 🟡 PARCIAL | Puente WebGL y jugador remoto implementados; falta prueba E2E real con dos cuentas. |
 | 19 | Persistencia de partidas | ❌ FALTA | No existe modelo ni escritura de partidas/resultados. |
 | 20 | Ranking | ❌ FALTA | No existe pantalla, consulta ni coleccion de puntajes. |
 | 21 | Reconexion | ❌ FALTA | No hay cliente/servidor multijugador que pueda reconectar. |
@@ -122,6 +122,13 @@ Las carpetas `firebase`, `server`, `deployment` y `docs` no contenian archivos a
 - Firestore Standard creado en Santiago, reglas publicadas e indices compuestos en compilacion.
 - Lobby con creacion, union, listado en tiempo real y espera de dos jugadores implementado.
 - `npm run lint` y `npm run build` pasan con la configuracion Firebase real.
+
+### Checkpoint multijugador - 2026-08-20
+
+- Servidor Socket.IO autenticado, protocolo tipado y validacion anti-movimiento implementados.
+- Tres pruebas unitarias del servidor, typecheck, build y npm audit pasan.
+- Puente Next.js/Unity y representacion del jugador remoto compilados en WebGL.
+- Build WebGL reproducible y carga visual local verificada en Edge.
 
 ## Riesgos y decisiones inmediatas
 

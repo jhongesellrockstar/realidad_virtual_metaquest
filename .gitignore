@@ -20,6 +20,10 @@ code_arena/unity/ArenaMultiplayer/*.suo
 code_arena/unity/ArenaMultiplayer/*.user
 code_arena/unity/ArenaMultiplayer/*.userprefs
 
+# Node.js generated dependencies and builds
+**/node_modules/
+code_arena/server/dist/
+
 # Firebase Admin and server credentials
 **/*service-account*.json
 **/firebase-adminsdk*.json
