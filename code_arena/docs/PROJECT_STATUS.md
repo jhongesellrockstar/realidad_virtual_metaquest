@@ -40,13 +40,13 @@ El ultimo estado funcional es un prototipo local: una landing de Next.js enlaza 
 | 22 | Manejo de errores | 🟡 PARCIAL | Auth incluye mensajes utiles, estados loading y configuracion faltante; faltan red, sala y persistencia. |
 | 23 | Variables de entorno | ✅ HECHO | `.env.example` documentado y `.env.local` ignorado configurado para el proyecto Firebase. |
 | 24 | Seguridad | ✅ HECHO | Reglas restrictivas, ID tokens verificados, token invalido rechazado y credenciales locales ignoradas por Git. |
-| 25 | Docker | ❌ FALTA | `deployment/docker` esta vacio. |
-| 26 | Nginx | ❌ FALTA | `deployment/nginx` esta vacio. |
+| 25 | Docker | ✅ HECHO | Dockerfiles multi-stage y Compose con healthchecks; ambas imagenes compilaron en GitHub Actions Linux. |
+| 26 | Nginx | ✅ HECHO | Reverse proxy HTTP/HTTPS, WebSocket, TLS, headers y health endpoint preparados. |
 | 27 | VPS | ⚠️ REQUIERE ACCIÓN DEL USUARIO | No hay VPS seleccionada ni acceso suministrado. No se debe contratar nada sin autorizacion. |
 | 28 | DNS | ⚠️ REQUIERE ACCIÓN DEL USUARIO | No hay dominio/subdominio ni proveedor DNS definido. |
-| 29 | HTTPS | ❌ FALTA | No hay certificado ni configuracion Certbot/Let's Encrypt. Depende de VPS y DNS. |
-| 30 | CI/CD | ❌ FALTA | No existe `.github/` ni workflow. |
-| 31 | README | 🔴 ERROR | El README raiz solo dice `Proyecto` y el README web es el texto generico de create-next-app. No documentan arquitectura ni ejecucion completa. |
+| 29 | HTTPS | 🟡 PARCIAL | Flujo Nginx/Certbot preparado y E2E publico TLS temporal aprobado; certificado permanente depende de VPS y DNS. |
+| 30 | CI/CD | ✅ HECHO | GitHub Actions valida server, web, audits y ambas imagenes Docker; primera ejecucion completa exitosa. |
+| 31 | README | ✅ HECHO | README profesional y guias de arquitectura, Firebase, protocolo, pruebas y despliegue. |
 | 32 | Pruebas con dos clientes | ✅ HECHO | Flujo completo probado en puertos/origenes independientes: login, sala, WebGL, movimiento mutuo, salida, resultado, ranking e historial. |
 
 ## Auditoria tecnica
@@ -138,22 +138,26 @@ Las carpetas `firebase`, `server`, `deployment` y `docs` no contenian archivos a
 - Victoria persistida en `matches`, acumulados en `scores`, sala marcada `finished` y ranking/historial verificados en navegador.
 - Server typecheck, 4 tests y build; Web lint y build: todos pasan.
 
+### Checkpoint despliegue y HTTPS - 2026-08-21
+
+- Docker Desktop y cloudflared instalados; el motor Docker local requiere completar su primer arranque, pero las dos imagenes compilaron en CI Linux.
+- Compose, Nginx HTTP/HTTPS, WebSocket, healthchecks, TLS y reinicio automatico configurados.
+- CI `Code Arena CI #1` paso server, web y containers.
+- Endpoints Web, Unity y servidor respondieron HTTP 200 desde Internet mediante HTTPS.
+- E2E publico sala `JMKKK`: Firebase Auth, WebSocket TLS, movimiento bidireccional y desconexion aprobaron.
+
 ## Riesgos y decisiones inmediatas
 
-1. La prueba E2E de Auth y salas requiere crear dos cuentas de prueba; la configuracion externa ya esta lista.
-2. La proteccion solo del lado cliente no sera suficiente para el objetivo final. La navegacion debe bloquearse durante la resolucion de sesion y el servidor debe validar cada ID token con Firebase Admin.
-3. El lint debe ignorar `public/unity/**` porque es salida generada y no mantenible manualmente.
+1. El tunel HTTPS usado para la prueba externa es temporal y no ofrece persistencia ni SLA.
+2. Para la URL definitiva faltan una VPS/IP, acceso SSH y un dominio/subdominio controlado por el usuario.
+3. La reconexion vuelve a unir Socket.IO, pero no conserva la posicion durante cortes prolongados.
 4. La build WebGL pesada esta versionada una sola vez en la ruta publicada; no se debe agregar la copia ignorada de `Builds/`.
-5. El servidor de movimiento debe usar Socket.IO/WebSocket; Firestore se reservara para usuarios, salas persistentes, partidas y puntajes.
 
 ## Siguiente hito
 
-**Hito 1 - Firebase, Authentication, Firestore y rutas protegidas**
+**Hito final - alojamiento persistente**
 
-1. Crear o seleccionar el proyecto Firebase y registrar la app web.
-2. Habilitar email/password y crear Firestore en modo produccion.
-3. Agregar `.env.example`, cliente Firebase tipado y validacion de configuracion.
-4. Implementar provider de sesion, registro, login, logout y estados de error/carga.
-5. Proteger `/lobby` y `/game`; retirar el acceso anonimo directo.
-6. Crear perfil basico y salas en Firestore con reglas restrictivas.
-7. Corregir lint, ejecutar build y pruebas de rutas antes de iniciar el servidor multijugador.
+1. Recibir IP/SSH de una VPS Linux y el dominio o subdominio elegido.
+2. Crear el registro DNS `A`, copiar el secreto Firebase Admin y completar `deployment/.env`.
+3. Levantar Compose, emitir Let's Encrypt, habilitar la configuracion HTTPS y ejecutar el mismo E2E publico.
+4. Registrar los secretos SSH en GitHub y añadir despliegue automatico solo despues de validar el despliegue manual.
