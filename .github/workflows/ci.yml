@@ -1,0 +1,77 @@
+name: Code Arena CI
+
+on:
+  pull_request:
+    paths:
+      - "code_arena/**"
+      - ".github/workflows/ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "code_arena/**"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code_arena/server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: code_arena/server/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm audit --audit-level=high
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code_arena/web
+    env:
+      NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: code-arena-daf7b.firebaseapp.com
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: code-arena-daf7b
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: code-arena-daf7b.firebasestorage.app
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+      NEXT_PUBLIC_FIREBASE_APP_ID: 1:000000000000:web:ci
+      NEXT_PUBLIC_MULTIPLAYER_URL: http://localhost:4000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: code_arena/web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm audit --audit-level=high
+
+  containers:
+    runs-on: ubuntu-latest
+    needs: [server, web]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build multiplayer server image
+        run: docker build code_arena/server
+      - name: Build web image
+        run: >-
+          docker build code_arena/web
+          --build-arg NEXT_PUBLIC_FIREBASE_API_KEY=ci-placeholder
+          --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=code-arena-daf7b.firebaseapp.com
+          --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID=code-arena-daf7b
+          --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=code-arena-daf7b.firebasestorage.app
+          --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=000000000000
+          --build-arg NEXT_PUBLIC_FIREBASE_APP_ID=1:000000000000:web:ci
+          --build-arg NEXT_PUBLIC_MULTIPLAYER_URL=http://localhost:4000

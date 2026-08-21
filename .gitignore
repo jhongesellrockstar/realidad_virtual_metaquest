@@ -30,3 +30,5 @@ code_arena/server/dist/
 code_arena/server/.env*
 !code_arena/server/.env.example
 code_arena/.test-credentials.local.json
+code_arena/deployment/.env
+code_arena/deployment/certs/

@@ -1,0 +1,7 @@
+services:
+  nginx:
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/code-arena.https.conf:/etc/nginx/conf.d/default.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
